@@ -1,0 +1,20 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Ping Saturn</title>
+  </head>
+  <body>
+    <h1>Ping Saturn</h1>
+    <button onclick="ping()">Ping</button>
+
+    <script>
+      const WEBHOOK = "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping";
+
+      function ping() {
+        fetch(WEBHOOK, { mode: "no-cors" })
+          .then(() => alert("Ping sent!"))
+          .catch(() => alert("Failed to send ping"));
+      }
+    </script>
+  </body>
+</html>
