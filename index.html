@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8">
   <title>Saturn's Digital Doorbell</title>
+  <!-- Favicon with bell emoji -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2216%22>🔔</text></svg>">
   <style>
     /* Reset */
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -26,17 +28,17 @@
     }
 
     .glass-box {
-      position: relative;
+      position: fixed;
       z-index: 1;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 20px;
       padding: 40px;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       box-shadow: 0 0 20px rgba(255,255,255,0.1);
       text-align: center;
-      width: 300px;
+      width: 35vh;
     }
 
     input {
@@ -67,133 +69,147 @@
     button:hover {
       background: rgba(0,122,255,1);
     }
+
+    /* Right-side log panel */
+    #logPanel {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 250px;
+      height: 100vh;
+      background: rgba(20,20,20,0.5);
+      color: #fff;
+      padding: 20px;
+      overflow-y: auto;
+      font-size: 14px;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: 4px;
+      border-left: 1px solid rgba(255,255,255,0.1);
+      box-shadow: -2px 0 20px rgba(0,0,0,0.6);
+      z-index: 5;
+    }
+
+    #logPanel h3 {
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .log-entry {
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      padding-bottom: 6px;
+    }
   </style>
 </head>
 <body>
   <div id="particles-js"></div>
-  <!-- Log button in top-right -->
-<button id="showLogBtn" style="
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  padding: 10px 16px;
-  border-radius: 12px;
-  border: none;
-  background: rgba(255,255,255,0.1);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 10;
-">Show Log</button>
 
-<!-- Log overlay popup -->
-<div id="logOverlay" style="
-  position: fixed;
-  top: 60px;
-  right: 20px;
-  background: rgba(20,20,20,0.95);
-  padding: 15px;
-  border-radius: 12px;
-  font-size: 14px;
-  color: white;
-  display: none;
-  z-index: 10;
-  max-width: 220px;
-  box-shadow: 0 0 20px rgba(0,0,0,0.6);
-">
-  Loading log…
-</div>
-
-<script>
-const JSONBIN_ID = 68a31acaae596e708fcd3922; // replace with your bin ID
-// Note: reading the log doesn’t require the secret key if the bin is public
-const LOG_REFRESH_INTERVAL = 15000;      // 15s auto-refresh
-
-async function loadLog() {
-  try {
-    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`);
-    const data = await res.json();
-    const record = data.record;
-    document.getElementById("logOverlay").innerText =
-      `Last Ping: ${record.lastPing}\nTime: ${record.timestamp}`;
-  } catch (err) {
-    document.getElementById("logOverlay").innerText = "Could not load log.";
-    console.error(err);
-  }
-}
-
-// Toggle overlay visibility
-const showLogBtn = document.getElementById("showLogBtn");
-const logOverlay = document.getElementById("logOverlay");
-
-showLogBtn.addEventListener("click", () => {
-  if (logOverlay.style.display === "none") {
-    loadLog();
-    logOverlay.style.display = "block";
-  } else {
-    logOverlay.style.display = "none";
-  }
-});
-
-// Optional: auto-refresh log every interval while visible
-setInterval(() => {
-  if (logOverlay.style.display !== "none") loadLog();
-}, LOG_REFRESH_INTERVAL);
-</script>
   <div class="glass-box">
-    <h2>Ping Saturn</h2>
+    <h2>Ping SleeperOfSaturn</h2>
     <br>
     <input type="text" id="nameInput" placeholder="Enter your name">
     <button onclick="sendPing()">Send Ping</button>
   </div>
 
+  <!-- Persistent log panel -->
+  <div id="logPanel">
+    <h3>Recent Pings</h3>
+    <div id="logEntries">Loading…</div>
+  </div>
+
   <!-- particles.js library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+
   <script>
-    // Webhook map - fixed variable name
     // Webhook map
-const WEBHOOKS = {
-  "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
-  // Add more names if needed
-};
+    const WEBHOOKS = {
+      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
+      // Add more like: "john": "https://api.pushcut.io/.../John%20Ping"
+    };
 
-const JSONBIN_ID = 68a31acaae596e708fcd3922; // replace with your bin ID
-const JSONBIN_KEY = $2a$10$EFoDNu/JdnMgdB4fjvG3O.MyCIp.y0zU0PKSuIEnzG6.YfyiPdeUu"; // replace with your secret key
+    // jsonbin.io config
+    const JSONBIN_ID = "68a31acaae596e708fcd3922"; 
+    const JSONBIN_KEY = "$2a$10$EFoDNu/JdnMgdB4fjvG3O.MyCIp.y0zU0PKSuIEnzG6.YfyiPdeUu"; 
+    const LOG_REFRESH_INTERVAL = 15000; // 15s auto-refresh
 
-function sendPing() {
-  const nameInput = document.getElementById("nameInput").value.trim().toLowerCase();
-  if (!nameInput) {
-    alert("Please enter your name.");
-    return;
-  }
-  if (!(nameInput in WEBHOOKS)) {
-    alert("Name not recognized.");
-    return;
-  }
+    // Send ping & update log
+    async function sendPing() {
+      const nameInput = document.getElementById("nameInput").value.trim().toLowerCase();
+      if (!nameInput) return alert("Please enter your name.");
+      if (!(nameInput in WEBHOOKS)) return alert("Name not recognized.");
 
-  const url = WEBHOOKS[nameInput];
+      const url = WEBHOOKS[nameInput];
 
-  // Send Pushcut ping
-  fetch(url, { mode: "no-cors" })
-    .then(() => alert("Ping sent for " + nameInput.charAt(0).toUpperCase() + nameInput.slice(1)))
-    .catch(() => alert("Failed to send ping"));
+      // Pushcut ping
+      fetch(url, { mode: "no-cors" })
+        .then(() => alert("Ping sent for " + nameInput.charAt(0).toUpperCase() + nameInput.slice(1)))
+        .catch(() => alert("Failed to send ping"));
 
-  // Update jsonbin log
-  fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Master-Key": JSONBIN_KEY,
-      "X-Bin-Versioning": "false"  // optional: disables versioning
-    },
-    body: JSON.stringify({
-      lastPing: nameInput,
-      timestamp: new Date().toISOString()
-    })
-  }).catch(err => console.error("Failed to update log:", err));
-}
+      try {
+        // 1. Fetch current logs
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+          headers: { "X-Master-Key": JSONBIN_KEY }
+        });
+        const data = await res.json();
+        let logs = data.record.logs || [];
 
-    // Initialize particles.js after script loads
+        // 2. Add new entry at top
+        logs.unshift({ name: nameInput, timestamp: new Date().toISOString() });
+
+        // 3. Keep last 8
+        logs = logs.slice(0, 8);
+
+        // 4. Save back
+        await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": JSONBIN_KEY,
+            "X-Bin-Versioning": "false"
+          },
+          body: JSON.stringify({ logs })
+        });
+
+        renderLog(logs);
+      } catch (err) {
+        console.error("Failed to update log:", err);
+      }
+    }
+
+    // Load log
+    async function loadLog() {
+      try {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
+          headers: { "X-Master-Key": JSONBIN_KEY }
+        });
+        const data = await res.json();
+        const logs = data.record.logs || [];
+        renderLog(logs);
+      } catch (err) {
+        document.getElementById("logEntries").innerText = "Could not load log.";
+        console.error(err);
+      }
+    }
+
+    // Render logs in panel
+    function renderLog(logs) {
+      const container = document.getElementById("logEntries");
+      container.innerHTML = "";
+      logs.forEach(log => {
+        const div = document.createElement("div");
+        div.className = "log-entry";
+        div.innerText = `${log.name.charAt(0).toUpperCase() + log.name.slice(1)}\n${new Date(log.timestamp).toLocaleString()}`;
+        container.appendChild(div);
+      });
+    }
+
+    // Auto-refresh
+    setInterval(loadLog, LOG_REFRESH_INTERVAL);
+
+    // Load initially
+    window.addEventListener("load", loadLog);
+
+    // Initialize particles.js
     window.addEventListener('load', function() {
       if (typeof particlesJS !== 'undefined') {
         particlesJS("particles-js", {
