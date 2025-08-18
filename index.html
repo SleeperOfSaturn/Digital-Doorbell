@@ -88,7 +88,12 @@
       box-shadow: -2px 0 20px rgba(0,0,0,0.6);
       z-index: 5;
     }
-
+    /* Hide log panel on mobile */
+    @media (max-width: 768px) {
+      #logPanel {
+        display: none;
+      }
+    }
     #logPanel h3 {
       margin-bottom: 10px;
       font-weight: 600;
