@@ -71,7 +71,75 @@
 </head>
 <body>
   <div id="particles-js"></div>
+  <!-- Log button in top-right -->
+<button id="showLogBtn" style="
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 10;
+">Show Log</button>
 
+<!-- Log overlay popup -->
+<div id="logOverlay" style="
+  position: fixed;
+  top: 60px;
+  right: 20px;
+  background: rgba(20,20,20,0.95);
+  padding: 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: white;
+  display: none;
+  z-index: 10;
+  max-width: 220px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+">
+  Loading log…
+</div>
+
+<script>
+const JSONBIN_ID = 68a31acaae596e708fcd3922; // replace with your bin ID
+// Note: reading the log doesn’t require the secret key if the bin is public
+const LOG_REFRESH_INTERVAL = 15000;      // 15s auto-refresh
+
+async function loadLog() {
+  try {
+    const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`);
+    const data = await res.json();
+    const record = data.record;
+    document.getElementById("logOverlay").innerText =
+      `Last Ping: ${record.lastPing}\nTime: ${record.timestamp}`;
+  } catch (err) {
+    document.getElementById("logOverlay").innerText = "Could not load log.";
+    console.error(err);
+  }
+}
+
+// Toggle overlay visibility
+const showLogBtn = document.getElementById("showLogBtn");
+const logOverlay = document.getElementById("logOverlay");
+
+showLogBtn.addEventListener("click", () => {
+  if (logOverlay.style.display === "none") {
+    loadLog();
+    logOverlay.style.display = "block";
+  } else {
+    logOverlay.style.display = "none";
+  }
+});
+
+// Optional: auto-refresh log every interval while visible
+setInterval(() => {
+  if (logOverlay.style.display !== "none") loadLog();
+}, LOG_REFRESH_INTERVAL);
+</script>
   <div class="glass-box">
     <h2>Ping Saturn</h2>
     <br>
@@ -83,26 +151,47 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
   <script>
     // Webhook map - fixed variable name
-    const WEBHOOKS = {
-      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
-      // add more like: "john": "https://api.pushcut.io/.../John%20Ping"
-    };
+    // Webhook map
+const WEBHOOKS = {
+  "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
+  // Add more names if needed
+};
 
-    function sendPing() {
-      const name = document.getElementById("nameInput").value.trim().toLowerCase();
-      if (!name) {
-        alert("Please enter your name.");
-        return;
-      }
-      if (!(name in WEBHOOKS)) {
-        alert("Name not recognized.");
-        return;
-      }
-      const url = WEBHOOKS[name];
-      fetch(url, { mode: "no-cors" })
-        .then(() => alert("Ping sent for " + name.charAt(0).toUpperCase() + name.slice(1)))
-        .catch(() => alert("Failed to send ping"));
-    }
+const JSONBIN_ID = 68a31acaae596e708fcd3922; // replace with your bin ID
+const JSONBIN_KEY = $2a$10$EFoDNu/JdnMgdB4fjvG3O.MyCIp.y0zU0PKSuIEnzG6.YfyiPdeUu"; // replace with your secret key
+
+function sendPing() {
+  const nameInput = document.getElementById("nameInput").value.trim().toLowerCase();
+  if (!nameInput) {
+    alert("Please enter your name.");
+    return;
+  }
+  if (!(nameInput in WEBHOOKS)) {
+    alert("Name not recognized.");
+    return;
+  }
+
+  const url = WEBHOOKS[nameInput];
+
+  // Send Pushcut ping
+  fetch(url, { mode: "no-cors" })
+    .then(() => alert("Ping sent for " + nameInput.charAt(0).toUpperCase() + nameInput.slice(1)))
+    .catch(() => alert("Failed to send ping"));
+
+  // Update jsonbin log
+  fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Master-Key": JSONBIN_KEY,
+      "X-Bin-Versioning": "false"  // optional: disables versioning
+    },
+    body: JSON.stringify({
+      lastPing: nameInput,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(err => console.error("Failed to update log:", err));
+}
 
     // Initialize particles.js after script loads
     window.addEventListener('load', function() {
