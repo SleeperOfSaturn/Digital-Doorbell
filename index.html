@@ -1,96 +1,115 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8">
   <title>Ping Saturn</title>
   <style>
-    /* Dark Apple-like styling */
-    body {
+    /* Base setup */
+    html, body {
+      height: 100%;
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #1c1c1e;
-      color: #f2f2f7;
+      background: #000; /* true black for OLED */
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+      color: white;
     }
-    .container {
-      background-color: #2c2c2e;
-      padding: 30px;
+
+    /* Animated gradient background */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle at 20% 20%, #00f5ff55, transparent 60%),
+                  radial-gradient(circle at 80% 80%, #ff00ff55, transparent 60%),
+                  radial-gradient(circle at 50% 50%, #0080ff55, transparent 60%);
+      animation: move 15s infinite linear;
+      z-index: 0;
+    }
+
+    @keyframes move {
+      0% { transform: translate(0,0) rotate(0deg); }
+      50% { transform: translate(-10%, -10%) rotate(180deg); }
+      100% { transform: translate(0,0) rotate(360deg); }
+    }
+
+    /* Glass box */
+    .glass-box {
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-      width: 90%;
-      max-width: 400px;
+      padding: 40px;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      text-align: center;
+      width: 300px;
+    }
+
+    h1 {
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 80%;
+      padding: 12px;
+      margin-bottom: 20px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
       text-align: center;
     }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 20px;
-      font-weight: 600;
-      color: #ffffff;
-    }
-    input {
-      width: 100%;
-      padding: 12px 14px;
-      margin: 10px 0 20px 0;
-      border-radius: 12px;
-      border: none;
-      font-size: 1rem;
-      background-color: #3a3a3c;
-      color: #ffffff;
-      outline: none;
-    }
-    input::placeholder {
-      color: #8e8e93;
-    }
+
     button {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 12px;
-      font-size: 1rem;
+      padding: 12px 24px;
+      font-size: 16px;
       font-weight: 600;
-      background-color: #0a84ff;
+      border-radius: 12px;
+      border: none;
       color: white;
+      background: linear-gradient(135deg, #00c6ff, #0072ff);
       cursor: pointer;
-      transition: background-color 0.2s;
+      transition: transform 0.2s ease, opacity 0.2s ease;
     }
+
     button:hover {
-      background-color: #0060df;
+      transform: scale(1.05);
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <div class="container">
+  <div class="glass-box">
     <h1>Ping Saturn</h1>
-    <input id="nameInput" type="text" placeholder="Enter your name">
-    <button onclick="sendPing()">Send Ping</button>
+    <input type="text" id="nameInput" placeholder="Enter your name">
+    <br>
+    <button onclick="sendPing()">Ping</button>
   </div>
 
   <script>
-    // Map names to their specific webhooks (case-insensitive keys)
-    const WEBHOOKS = {
-      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
-      // Add more people here, e.g.:
-      // "bob": "https://api.pushcut.io/.../Bob%20Ping",
-      // "alice": "https://api.pushcut.io/.../Alice%20Ping"
+    // Map names to webhooks (expand as needed)
+    const webhooks = {
+      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/incoming-webhook/Aadity%27s%20Ping"
+      // Add more like: "alex": "URL", "john": "URL"
     };
 
     function sendPing() {
       const name = document.getElementById("nameInput").value.trim().toLowerCase();
-      if (!name) {
-        alert("Please enter your name.");
-        return;
+      if (webhooks[name]) {
+        fetch(webhooks[name], { mode: "no-cors" })
+          .then(() => alert("Ping sent to Saturn for " + name))
+          .catch(() => alert("Ping failed"));
+      } else {
+        alert("No webhook found for this name.");
       }
-      if (!(name in WEBHOOKS)) {
-        alert("Name not recognized.");
-        return;
-      }
-      const url = WEBHOOKS[name];
-      fetch(url, { mode: "no-cors" })
-        .then(() => alert("Ping sent for " + name.charAt(0).toUpperCase() + name.slice(1)))
-        .catch(() => alert("Failed to send ping"));
     }
   </script>
 </body>
