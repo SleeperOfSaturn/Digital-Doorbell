@@ -48,7 +48,7 @@
       color: #fff;
       font-size: 16px;
       outline: none;
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       text-align: center;
     }
 
@@ -75,7 +75,7 @@
   <div class="glass-box">
     <h2>Ping Saturn</h2>
     <input type="text" id="nameInput" placeholder="Enter your name">
-    <button onclick="ping()">Send Ping</button>
+    <button onclick="sendPing()">Send Ping</button>
   </div>
 
   <!-- particles.js library -->
@@ -83,19 +83,24 @@
   <script>
     // Webhook map
     const webhooks = {
-      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/incoming-webhook/Aadity%27s%20Ping"
+      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping"
       // add more like: "john": "https://api.pushcut.io/.../John%20Ping"
     };
 
-    function ping() {
+    function sendPing() {
       const name = document.getElementById("nameInput").value.trim().toLowerCase();
-      if (webhooks[name]) {
-        fetch(webhooks[name], { mode: "no-cors" })
-          .then(() => alert("Ping sent to Saturn"))
-          .catch(() => alert("Ping failed"));
-      } else {
-        alert("Name not recognized");
+      if (!name) {
+        alert("Please enter your name.");
+        return;
       }
+      if (!(name in WEBHOOKS)) {
+        alert("Name not recognized.");
+        return;
+      }
+      const url = WEBHOOKS[name];
+      fetch(url, { mode: "no-cors" })
+        .then(() => alert("Ping sent for " + name.charAt(0).toUpperCase() + name.slice(1)))
+        .catch(() => alert("Failed to send ping"));
     }
 
     // ParticlesJS config
@@ -104,7 +109,7 @@
         "number": { "value": 80, "density": { "enable": true, "value_area": 800 } },
         "color": { "value": "#ffffff" },
         "shape": { "type": "circle" },
-        "opacity": { "value": 0.3, "random": true },
+        "opacity": { "value": 0.8, "random": true },
         "size": { "value": 3, "random": true },
         "line_linked": { "enable": false },
         "move": { "enable": true, "speed": 1, "direction": "none", "random": true }
