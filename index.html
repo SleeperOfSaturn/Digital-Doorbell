@@ -191,20 +191,13 @@
       let reasonInput = document.getElementById("reasonInput").value.trim();
 
       if (!nameInput) return alert("Please enter your name.");
-
-      // Suggestive reason prompt
-      if (!reasonInput) {
-        if (confirm("Do you want to add a reason for the ping?")) {
-          return; // user can type reason and click again
-        }
-        reasonInput = "No reason given";
-      }
+      if (!reasonInput) reasonInput = "No reason given";
 
       // Notification text
       const cryptic = crypticMap[nameInput];
       const message = cryptic
-        ? `${cryptic} pinged you\nReason: ${reasonInput || "No reason given"}`
-        : `${cap(nameInput)} rang the bell\nReason: ${reasonInput || "No reason given"}`;
+        ? `${cryptic} rang the doorbell 🔔`
+        : `${cap(nameInput)} rang the bell\nReason: ${reasonInput}`;
 
       // --- Send ntfy notification ---
       try {
@@ -217,7 +210,7 @@
         console.error("Failed to send ntfy notification:", e);
       }
 
-      // --- JSONBin: update log with real details ---
+      // --- JSONBin: update log ---
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
           headers: { "X-Master-Key": JSONBIN_KEY }
