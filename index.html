@@ -203,8 +203,8 @@
       // Notification text
       const cryptic = crypticMap[nameInput];
       const message = cryptic
-        ? `🔔 ${cryptic} pinged you`
-        : `🔔 ${cap(nameInput)} rang the bell\nReason: ${reasonInput}`;
+        ? `${cryptic} pinged you\nReason: ${reasonInput || "No reason given"}`
+        : `${cap(nameInput)} rang the bell\nReason: ${reasonInput || "No reason given"}`;
 
       // --- Send ntfy notification ---
       try {
