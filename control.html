@@ -9,7 +9,7 @@
       background: #f5f5f5;
       margin: 0;
       padding: 0;
-      display: none; /* hide until unlocked */
+      display: none; /* hidden until unlocked */
     }
     .container {
       max-width: 900px;
@@ -19,9 +19,7 @@
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    h1, h2 {
-      margin-top: 0;
-    }
+    h1, h2 { margin-top: 0; }
     pre {
       background: #eee;
       padding: 10px;
@@ -46,9 +44,7 @@
       border-radius: 4px;
       cursor: pointer;
     }
-    button:hover {
-      background: #0056b3;
-    }
+    button:hover { background: #0056b3; }
   </style>
 </head>
 <body>
@@ -74,7 +70,7 @@
     }
     document.body.style.display = "block";
 
-    // --- Alias Map (must match main page) ---
+    // --- Alias Map (sync with main page) ---
     const crypticAliases = {
       ganik: "Garlic",
       aadity: "Witch of Venus",
@@ -89,37 +85,39 @@
         .join("<br>");
     }
 
-    // Fetch and render logs
+    // --- JSONBin IDs (auto-filled from main page) ---
+    const BIN_ID = "66c6d3f9ad19ca34f8a46974";
+
+    // Fetch and render logs (public bin → no key needed)
     async function fetchLogs() {
       try {
-        const res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest", {
-          headers: {
-            "X-Master-Key": "YOUR_API_KEY"
-          }
-        });
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`);
         const data = await res.json();
-        document.getElementById("jsonPane").innerText = JSON.stringify(data.record || data, null, 2);
+        document.getElementById("jsonPane").innerText =
+          JSON.stringify(data.record || data, null, 2);
       } catch (err) {
         document.getElementById("jsonPane").innerText = "Error fetching logs.";
         console.error(err);
       }
     }
 
-    // Clear logs
+    // Clear logs (needs key even if bin is public)
     async function clearLogs() {
       if (!confirm("Are you sure you want to clear all logs?")) return;
       try {
-        const res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID", {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            "X-Master-Key": "YOUR_API_KEY"
+            "X-Master-Key": "YOUR_API_KEY" // still required for write ops
           },
           body: JSON.stringify([])
         });
         if (res.ok) {
           alert("Logs cleared.");
           fetchLogs();
+        } else {
+          alert("Failed to clear logs. (Key missing?)");
         }
       } catch (err) {
         alert("Error clearing logs.");
