@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Control Room - Saturn's Digital Doorbell</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: none; /* hide until unlocked */
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1, h2 {
+      margin-top: 0;
+    }
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .alias-list {
+      margin: 10px 0;
+      padding: 10px;
+      background: #f0f0f0;
+      border-radius: 6px;
+    }
+    button {
+      margin: 5px 0;
+      padding: 8px 14px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Control Room</h1>
+
+    <h2>Aliases</h2>
+    <div id="aliasList" class="alias-list"></div>
+
+    <h2>Logs</h2>
+    <button onclick="clearLogs()">Clear Logs</button>
+    <h3>Raw JSON</h3>
+    <pre id="jsonPane">Loading...</pre>
+  </div>
+
+  <script>
+    // --- PIN LOCK ---
+    const pin = "2010";
+    const entered = prompt("Enter PIN to access Control Room:");
+    if (entered !== pin) {
+      document.body.innerHTML = "<h1 style='text-align:center;margin-top:20%;'>Access Denied</h1>";
+      throw new Error("Wrong PIN");
+    }
+    document.body.style.display = "block";
+
+    // --- Alias Map (must match main page) ---
+    const crypticAliases = {
+      ganik: "Garlic",
+      aadity: "Witch of Venus",
+      chinmay: "Chimney"
+    };
+
+    // Display aliases
+    function renderAliases() {
+      const container = document.getElementById("aliasList");
+      container.innerHTML = Object.entries(crypticAliases)
+        .map(([k, v]) => `<b>${k}</b> → ${v}`)
+        .join("<br>");
+    }
+
+    // Fetch and render logs
+    async function fetchLogs() {
+      try {
+        const res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest", {
+          headers: {
+            "X-Master-Key": "YOUR_API_KEY"
+          }
+        });
+        const data = await res.json();
+        document.getElementById("jsonPane").innerText = JSON.stringify(data.record || data, null, 2);
+      } catch (err) {
+        document.getElementById("jsonPane").innerText = "Error fetching logs.";
+        console.error(err);
+      }
+    }
+
+    // Clear logs
+    async function clearLogs() {
+      if (!confirm("Are you sure you want to clear all logs?")) return;
+      try {
+        const res = await fetch("https://api.jsonbin.io/v3/b/YOUR_BIN_ID", {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Master-Key": "YOUR_API_KEY"
+          },
+          body: JSON.stringify([])
+        });
+        if (res.ok) {
+          alert("Logs cleared.");
+          fetchLogs();
+        }
+      } catch (err) {
+        alert("Error clearing logs.");
+        console.error(err);
+      }
+    }
+
+    // Init
+    renderAliases();
+    fetchLogs();
+  </script>
+</body>
+</html>
