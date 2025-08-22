@@ -162,29 +162,34 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
 
   <script>
-    const WEBHOOKS = {
-      "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping",
-      "ganik": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Ganik%E2%80%99s%20Ping",
-      "chinmay": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Chinmay%E2%80%99s%20Ping"
-    };
+    // JSONBin config
+    const JSONBIN_ID = "68a31acaae596e708fcd3922";
+    const JSONBIN_KEY = "$2a$10$EFoDNu/JdnMgdB4fjvG3O.MyCIp.y0zU0PKSuIEnzG6.YfyiPdeUu";
+    const LOG_REFRESH_INTERVAL = 15000; // 15s
 
-    const JSONBIN_ID = "68a31acaae596e708fcd3922"; 
-    const JSONBIN_KEY = "$2a$10$EFoDNu/JdnMgdB4fjvG3O.MyCIp.y0zU0PKSuIEnzG6.YfyiPdeUu"; 
-    const LOG_REFRESH_INTERVAL = 15000;
+    // Helper: capitalize first letter for display/notification
+    function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
+    // Send ping, notify via ntfy, and persist log (keep last 20)
     async function sendPing() {
       const nameInput = document.getElementById("nameInput").value.trim().toLowerCase();
       const reasonInput = document.getElementById("reasonInput").value.trim();
 
       if (!nameInput) return alert("Please enter your name.");
-      if (!(nameInput in WEBHOOKS)) return alert("Name not recognized.");
 
-      const url = WEBHOOKS[nameInput];
+      // --- ntfy.sh notification ---
+      const message = `${cap(nameInput)} rang the bell\nReason: ${reasonInput || "No reason given"}`;
+      try {
+        await fetch("https://ntfy.sh/Doorbell-Pings", {
+          method: "POST",
+          headers: { "Content-Type": "text/plain" },
+          body: message
+        });
+      } catch (e) {
+        console.error("Failed to send ntfy notification:", e);
+      }
 
-      fetch(url, { mode: "no-cors" })
-        .then(() => alert("Ping sent for " + nameInput.charAt(0).toUpperCase() + nameInput.slice(1)))
-        .catch(() => alert("Failed to send ping"));
-
+      // --- JSONBin: load, update, save ---
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
           headers: { "X-Master-Key": JSONBIN_KEY }
@@ -192,10 +197,10 @@
         const data = await res.json();
         let logs = data.record.logs || [];
 
-        logs.unshift({ 
-          name: nameInput, 
-          reason: reasonInput || "No reason given", 
-          timestamp: new Date().toISOString() 
+        logs.unshift({
+          name: nameInput,
+          reason: reasonInput || "No reason given",
+          timestamp: new Date().toISOString()
         });
 
         // Keep last 20
@@ -217,6 +222,7 @@
       }
     }
 
+    // Load log from JSONBin
     async function loadLog() {
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}/latest`, {
@@ -231,6 +237,7 @@
       }
     }
 
+    // Render right-pane log with expandable reason
     function renderLog(logs) {
       const container = document.getElementById("logEntries");
       container.innerHTML = "";
@@ -241,7 +248,7 @@
         const nameSpan = document.createElement("span");
         nameSpan.style.cursor = "pointer";
         nameSpan.style.fontWeight = "600";
-        nameSpan.innerText = log.name.charAt(0).toUpperCase() + log.name.slice(1);
+        nameSpan.innerText = cap(log.name);
         nameSpan.onclick = () => div.classList.toggle("open");
 
         const timeDiv = document.createElement("div");
@@ -260,9 +267,11 @@
       });
     }
 
+    // Auto-refresh
     setInterval(loadLog, LOG_REFRESH_INTERVAL);
     window.addEventListener("load", loadLog);
 
+    // Particles
     window.addEventListener('load', function() {
       if (typeof particlesJS !== 'undefined') {
         particlesJS("particles-js", {
