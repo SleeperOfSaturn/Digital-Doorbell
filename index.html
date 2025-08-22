@@ -170,11 +170,11 @@
     // Cooldown tracker
     let lastPingTime = 0;
 
-    // Cryptic alias map
-    const crypticMap = {
-      "ganik": "Garlic",
-      "aadity": "Witch of Venus",
-      "chinmay": "Chimney"
+    // Cryptic lines map
+    const crypticLines = {
+      "chinmay": 'Someone rang the doorbell 🔔\n"The chimney blew white smoke"',
+      "aadity": '"The witch of Venus has summoned you" 🔔',
+      "ganik": '"The garlic has ripened" 🔔'
     };
 
     function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
@@ -194,10 +194,10 @@
       if (!reasonInput) reasonInput = "No reason given";
 
       // Notification text
-      const cryptic = crypticMap[nameInput];
-      const message = cryptic
-        ? `${cryptic} rang the doorbell 🔔`
-        : `${cap(nameInput)} rang the bell\nReason: ${reasonInput}`;
+      const crypticMessage = crypticLines[nameInput];
+      const message = crypticMessage
+        ? crypticMessage
+        : `${cap(nameInput)} rang the bell 🔔\nReason: ${reasonInput}`;
 
       // --- Send ntfy notification ---
       try {
