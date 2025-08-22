@@ -171,6 +171,7 @@
       "aadity": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Aadity%E2%80%99s%20Ping",
       "ganik": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Ganik%E2%80%99s%20Ping",
       "chinmay": "https://api.pushcut.io/yIplredoAJ4kPmQMqcja7/notifications/Chinmay%E2%80%99s%20Ping"
+      "*TEST*": "nothing"
       // Add more like: "john": "https://api.pushcut.io/.../John%20Ping"
     };
 
@@ -208,7 +209,7 @@
           timestamp: new Date().toISOString() 
         });
 
-        logs = logs.slice(0, 8);
+        logs = logs.slice(0, 25);
 
         await fetch(`https://api.jsonbin.io/v3/b/${JSONBIN_ID}`, {
           method: "PUT",
