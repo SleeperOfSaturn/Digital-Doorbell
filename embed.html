@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Quick Ping</title>
+  <style>
+    body {
+      background: #000;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    button {
+      background: #007AFF;
+      border: none;
+      border-radius: 12px;
+      padding: 16px 28px;
+      font-size: 18px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover { background: #005BBB; }
+  </style>
+</head>
+<body>
+  <button onclick="sendPing()">🔔 Ping Saturn</button>
+
+  <script>
+    async function sendPing() {
+      try {
+        await fetch("https://ntfy.sh/Doorbell-Pings", {
+          method: "POST",
+          headers: { 
+            "Content-Type": "text/plain",
+            "Title": "Ping Recieved!"
+          },
+          body: "Someone sent a quick ping 🔔"
+        });
+        alert("Ping sent!");
+      } catch (e) {
+        alert("Failed to send ping.");
+      }
+    }
+  </script>
+</body>
+</html>
