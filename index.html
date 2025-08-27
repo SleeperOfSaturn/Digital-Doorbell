@@ -250,7 +250,7 @@
       try {
         await fetch("https://ntfy.sh/Doorbell-Pings", {
           method: "POST",
-          headers: { "Content-Type": "text/plain" },
+          headers: { "Content-Type": "text/plain", "Title": "Ping Recieved!" },
           body: message
         });
       } catch (e) {
